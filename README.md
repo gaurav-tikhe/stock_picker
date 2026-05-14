@@ -1,54 +1,170 @@
-# StockPicker Crew
+# 📈 Stock Picker
 
-Welcome to the StockPicker Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+> A multi-agent AI system for intelligent stock research and analysis, built with [crewAI](https://crewai.com). A crew of specialised AI agents collaborates to research, analyse, and recommend stocks — delivering structured investment reports automatically.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [How It Works](#how-it-works)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the Project](#running-the-project)
+- [Customisation](#customisation)
+- [Resources](#resources)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+
+---
+
+## Overview
+
+**Stock Picker** leverages the crewAI framework to orchestrate a team of AI agents, each assigned a specific role in the stock research process. Agents work sequentially — gathering market data, performing analysis, and synthesising findings into a structured report saved to the output directory.
+
+The system is designed to be fully configurable: swap the stocks being researched, change the analysis criteria, or plug in different LLM providers without touching the core logic.
+
+---
+
+## How It Works
+
+The crew follows a **sequential multi-agent pipeline**:
+
+```
+Market Data Gathering
+        │
+        ▼
+Fundamental & Technical Analysis
+        │
+        ▼
+Risk Assessment
+        │
+        ▼
+Structured Report (report.md)
+```
+
+Each agent is defined with a specific role, goal, and backstory in `config/agents.yaml`. Tasks are mapped to agents in `config/tasks.yaml`, and the crew orchestrates execution end-to-end via `crew.py`.
+
+---
+
+## Project Structure
+
+```
+stock_picker/
+├── src/stock_picker/
+│   ├── config/
+│   │   ├── agents.yaml          # Agent definitions (role, goal, backstory)
+│   │   └── tasks.yaml           # Task definitions (description, expected output)
+│   ├── tools/                   # Custom tool implementations
+│   ├── crew.py                  # Crew orchestration logic
+│   └── main.py                  # Entry point and input configuration
+├── knowledge/                   # Domain knowledge sources for agents
+├── AGENTS.md                    # CrewAI reference for AI coding assistants
+└── pyproject.toml
+```
+
+---
+
+## Prerequisites
+
+- Python `>=3.10, <3.14`
+- [uv](https://docs.astral.sh/uv/) for dependency management
+- An OpenAI API key
+
+---
 
 ## Installation
 
-Ensure you have Python >=3.10 <3.14 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
-
-First, if you haven't already, install uv:
+**1. Install `uv` (if not already installed):**
 
 ```bash
 pip install uv
 ```
 
-Next, navigate to your project directory and install the dependencies:
+**2. Install the CrewAI CLI:**
 
-(Optional) Lock the dependencies and install them by using the CLI command:
+```bash
+uv tool install crewai
+```
+
+**3. Clone the repository:**
+
+```bash
+git clone https://github.com/gaurav-tikhe/stock_picker.git
+cd stock_picker
+```
+
+**4. Install project dependencies:**
+
 ```bash
 crewai install
 ```
-### Customizing
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+**5. Set up environment variables:**
 
-- Modify `src/stock_picker/config/agents.yaml` to define your agents
-- Modify `src/stock_picker/config/tasks.yaml` to define your tasks
-- Modify `src/stock_picker/crew.py` to add your own logic, tools and specific args
-- Modify `src/stock_picker/main.py` to add custom inputs for your agents and tasks
+Create a `.env` file in the project root:
+
+```env
+OPENAI_API_KEY=sk-your-key-here
+```
+
+---
 
 ## Running the Project
 
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
+To start the agent crew and begin stock research:
 
 ```bash
-$ crewai run
+crewai run
 ```
 
-This command initializes the stock_picker Crew, assembling the agents and assigning them tasks as defined in your configuration.
+This initialises all agents, assigns tasks as configured, and runs the full pipeline. The final output is saved as `report.md` in the project root.
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+---
 
-## Understanding Your Crew
+## Customisation
 
-The stock_picker Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+The project is designed to be easily tailored to different stocks, markets, or analysis strategies.
 
-## Support
+**Change the stocks being researched** — update the inputs in `main.py`:
 
-For support, questions, or feedback regarding the StockPicker Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
+```python
+inputs = {
+    "stocks": ["AAPL", "NVDA", "TSLA"],
+    "market": "US"
+}
+StockPickerCrew().crew().kickoff(inputs=inputs)
+```
 
-Let's create wonders together with the power and simplicity of crewAI.
+**Modify agent behaviour** — edit `src/stock_picker/config/agents.yaml` to adjust roles, goals, and backstories. Variables like `{stocks}` are interpolated at runtime.
+
+**Change tasks or output format** — edit `src/stock_picker/config/tasks.yaml` to redefine what each agent produces and how results are structured.
+
+**Swap the LLM provider** — update the agent config or `crew.py`:
+
+```yaml
+researcher:
+  llm: anthropic/claude-sonnet-4-20250514
+```
+
+**Add custom tools** — place new tool implementations in `src/stock_picker/tools/` and register them on the relevant agents in `crew.py`.
+
+---
+
+
+## Resources
+
+- [crewAI Documentation](https://docs.crewai.com)
+- [crewAI GitHub Repository](https://github.com/joaomdmoura/crewai)
+---
+
+## Disclaimer
+
+> **This project is intended for educational and informational purposes only.** The stock research and reports generated by this system do not constitute financial advice, investment recommendations, or endorsements of any specific securities. Always conduct your own due diligence and consult a qualified financial professional before making any investment decisions. The authors accept no liability for any financial losses incurred as a result of using this tool.
+
+---
+
+## License
+
+This project is open source. Contributions and forks are welcome.
